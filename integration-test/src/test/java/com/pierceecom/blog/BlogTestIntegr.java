@@ -21,9 +21,10 @@ import org.junit.runners.MethodSorters;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BlogTestIntegr {
 
-    private static final String POST_1 = "{\"id\":\"1\",\"title\":\"First title\",\"content\":\"First content\"}";
-    private static final String POST_2 = "{\"id\":\"2\",\"title\":\"Second title\",\"content\":\"Second content\"}";
-    private static final String POSTS_URI = "http://localhost:8080/blog-web/posts/";
+    private static final String POST_1 = "{\"content\":\"First content\",\"id\":\"1\",\"title\":\"First title\"}";
+    private static final String POST_2 = "{\"content\":\"Second content\",\"id\":\"2\",\"title\":\"Second title\"}";
+
+    private static final String POSTS_URI = "http://localhost:8080/blog-web/blogs/posts/";
 
     
     public BlogTestIntegr() {
@@ -45,8 +46,15 @@ public class BlogTestIntegr {
     }
 
     @Test
+    public void test_2_1_UpdatePosts() {
+        String location = PUT(POSTS_URI, POST_1);
+        assertEquals(POSTS_URI + "1", location);
+  }
+
+    @Test
     public void test_3_GetPost() {
         String postJson = GET(POSTS_URI + "1", 200);
+        System.out.println(postJson);
         assertEquals(POST_1, postJson);
 
         postJson = GET(POSTS_URI + "2", 200);
@@ -126,6 +134,32 @@ public class BlogTestIntegr {
         }
         return location;
     }
+
+    private String PUT(String uri, String json) {
+        String location = "";
+        try {
+            URL url = new URL(uri);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setDoOutput(true);
+            conn.setRequestMethod("PUT");
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            OutputStream os = conn.getOutputStream();
+            os.write(json.getBytes());
+            os.flush();
+            assertEquals(201, conn.getResponseCode());
+
+            location = conn.getHeaderField("Location");
+            conn.disconnect();
+
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return location;
+    }
+
 
     private void DELETE(String uri, int expectedResponseCode) {
         try {

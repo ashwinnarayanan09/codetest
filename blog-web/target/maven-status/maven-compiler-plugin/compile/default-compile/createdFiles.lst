@@ -1,0 +1,6 @@
+com\pierceecom\blog\model\Post.class
+com\pierceecom\blog\service\PostServiceImpl.class
+com\pierceecom\blog\service\PostService.class
+com\pierceecom\blog\repository\PostRepository.class
+com\pierceecom\blog\api\PostResource.class
+com\pierceecom\blog\JAXRSConfiguration.class
