@@ -19,15 +19,16 @@ import org.junit.runners.MethodSorters;
  * APIs (for example Jersey-client, JSON-P etc-) to call REST-service
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class BlogTestIntegr {
+public class PostResourceTest {
 
     private static final String POST_1 = "{\"content\":\"First content\",\"id\":\"1\",\"title\":\"First title\"}";
     private static final String POST_2 = "{\"content\":\"Second content\",\"id\":\"2\",\"title\":\"Second title\"}";
-
-    private static final String POSTS_URI = "http://localhost:8080/blog-web/blogs/posts/";
+    private static final String UPDATE_POST_1 = "{\"content\":\"First content updated\",\"id\":\"1\",\"title\":\"First title\"}";
+    private static final String INVALID_POST_1 = "{\"cont\":\"First content updated\",\"postId\":\"1\",\"title\":\"First title\"}";
+    private static final String POSTS_URI = "http://localhost:8080/blog-web/posts/";
 
     
-    public BlogTestIntegr() {
+    public PostResourceTest() {
     }
 
     @Test
@@ -46,8 +47,15 @@ public class BlogTestIntegr {
     }
 
     @Test
+    public void test_AddInvalidPosts() {
+        String location = POST(POSTS_URI, INVALID_POST_1);
+        assertEquals(POSTS_URI + "1", location);
+
+    }
+
+    @Test
     public void test_2_1_UpdatePosts() {
-        String location = PUT(POSTS_URI, POST_1);
+        String location = PUT(POSTS_URI, UPDATE_POST_1);
         assertEquals(POSTS_URI + "1", location);
   }
 
@@ -73,9 +81,15 @@ public class BlogTestIntegr {
         // Should now be gone
         GET(POSTS_URI + "1", 204);
 
-        DELETE(POSTS_URI + "2", 200);        
+        DELETE(POSTS_URI + "2", 200);
         // Should now be gone
-        GET(POSTS_URI + "2", 204);      
+        GET(POSTS_URI + "2", 204);
+
+    }
+
+    @Test
+    public void test_DeleteInvalidPosts() {
+        DELETE(POSTS_URI + "3", 404);
 
     }
 
@@ -103,9 +117,9 @@ public class BlogTestIntegr {
 
             conn.disconnect();
         } catch (MalformedURLException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         return sb.toString();
     }
@@ -128,9 +142,9 @@ public class BlogTestIntegr {
             conn.disconnect();
 
         } catch (MalformedURLException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         return location;
     }
@@ -153,9 +167,9 @@ public class BlogTestIntegr {
             conn.disconnect();
 
         } catch (MalformedURLException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         }
         return location;
     }
@@ -169,9 +183,9 @@ public class BlogTestIntegr {
             conn.setRequestProperty("Accept", "application/json");
             assertEquals(expectedResponseCode, conn.getResponseCode());
         } catch (MalformedURLException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Logger.getLogger(BlogTestIntegr.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(PostResourceTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 

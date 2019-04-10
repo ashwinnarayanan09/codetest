@@ -1,28 +1,27 @@
 package com.pierceecom.blog.api;
 
 import com.pierceecom.blog.model.Post;
-import com.pierceecom.blog.service.PostServiceImpl;
+
+import javax.validation.Valid;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import javax.ws.rs.Path;
+import java.util.ArrayList;
 import java.util.List;
 
-@Path("blogs")
+@Path("posts")
 public class PostResource {
 
-    private PostServiceImpl postServiceImpl;
+    List<Post> postList;
 
     public PostResource(){
-
-        this.postServiceImpl = new PostServiceImpl();
+         this.postList = new ArrayList<>();
     }
 
+
     @GET
-    @Path("/posts")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllPosts() {
-
-        List<Post> postList = postServiceImpl.getAllPosts();
 
         return Response
                 .status(Response.Status.OK)
@@ -32,10 +31,10 @@ public class PostResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    @Path("/posts")
-    public Response addPost(Post post,@Context UriInfo uriInfo) {
+    public Response addPost(@Valid Post post,@Context UriInfo uriInfo) {
 
-        this.postServiceImpl.addPost(post);
+        postList.add(createPost(post.getId(),post.getTitle(),post.getContent()));
+
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(post.getId());
 
@@ -46,26 +45,33 @@ public class PostResource {
     }
 
     @PUT
-    @Path("/posts")
-    public Response updatePost(Post post,@Context UriInfo uriInfo) {
+    public Response updatePost(@Valid Post postToUpdate, @Context UriInfo uriInfo) {
 
-        this.postServiceImpl.updatePost(post);
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
-        builder.path(post.getId());
+        builder.path(postToUpdate.getId());
+
+        for (Post post : postList) {
+            if (post.getId().equals(postToUpdate.getId())) {
+                post.setContent(postToUpdate.getContent());
+                return Response
+                        .created(builder.build())
+                        .status(Response.Status.CREATED)
+                        .build();
+            }
+        }
 
         return Response
-                .created(builder.build())
-                .status(Response.Status.CREATED)
+                .status(Response.Status.NOT_FOUND)
                 .build();
+
     }
 
     @GET
-    @Path("/posts/{id}")
+    @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getPostById(@PathParam("id")String id) {
-        Post post = postServiceImpl.getPostById(id);
-
-        System.out.println(post.getId());
+        Post post = postList.stream()
+                .filter(post1 -> id.equals(post1.getId())).findAny().orElse(null);
 
         if(post == null){
             return Response
@@ -80,13 +86,33 @@ public class PostResource {
     }
 
     @DELETE
-    @Path("/posts/{id}")
+    @Path("/{id}")
     public Response deletePost(@PathParam("id")String id) {
 
-        postServiceImpl.deletePost(id);
+        //postList.removeIf(post -> post.getId().equals(id));
+        for (Post post : postList) {
+            if (post.getId().equals(id)) {
+                postList.remove(post);
+                return Response
+                        .status(Response.Status.OK)
+                        .build();
+            }
+        }
 
         return Response
-                .status(Response.Status.OK)
+                .status(Response.Status.NOT_FOUND)
                 .build();
+    }
+
+    public Post createPost(String id,String title,String content){
+
+        Post post = new Post();
+
+        post.setId(id);
+        post.setTitle(title);
+        post.setContent(content);
+
+        return post;
+
     }
 }
