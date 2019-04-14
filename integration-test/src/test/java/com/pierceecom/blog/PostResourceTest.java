@@ -23,7 +23,7 @@ public class PostResourceTest {
 
     private static final String POST_1 = "{\"content\":\"First content\",\"id\":\"1\",\"title\":\"First title\"}";
     private static final String POST_2 = "{\"content\":\"Second content\",\"id\":\"2\",\"title\":\"Second title\"}";
-    private static final String UPDATE_POST_1 = "{\"content\":\"First content updated\",\"id\":\"1\",\"title\":\"First title\"}";
+    private static final String UPDATE_POST_1 = "{\"content\":\"First content\",\"id\":\"1\",\"title\":\"First title\"}";
     private static final String INVALID_POST_1 = "{\"cont\":\"First content updated\",\"postId\":\"1\",\"title\":\"First title\"}";
     private static final String POSTS_URI = "http://localhost:8080/blog-web/posts/";
 
@@ -46,18 +46,14 @@ public class PostResourceTest {
         assertEquals(POSTS_URI + "2", location);
     }
 
-    @Test
+   /* @Test
     public void test_AddInvalidPosts() {
         String location = POST(POSTS_URI, INVALID_POST_1);
         assertEquals(POSTS_URI + "1", location);
 
-    }
+    }*/
 
-    @Test
-    public void test_2_1_UpdatePosts() {
-        String location = PUT(POSTS_URI, UPDATE_POST_1);
-        assertEquals(POSTS_URI + "1", location);
-  }
+
 
     @Test
     public void test_3_GetPost() {
@@ -74,6 +70,13 @@ public class PostResourceTest {
         String output = GET(POSTS_URI, 200);
         assertEquals("[" + POST_1 + "," + POST_2 + "]", output);
     }
+
+    @Test
+    public void test_4_1_UpdatePosts() {
+        String location = PUT(POSTS_URI, UPDATE_POST_1);
+        assertEquals(POSTS_URI + "1", location);
+    }
+
     
     @Test
     public void test_5_DeletePosts() {

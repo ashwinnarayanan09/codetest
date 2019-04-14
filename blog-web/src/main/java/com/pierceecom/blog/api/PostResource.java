@@ -1,6 +1,8 @@
 package com.pierceecom.blog.api;
 
 import com.pierceecom.blog.model.Post;
+import com.pierceecom.blog.service.PostService;
+import com.pierceecom.blog.service.PostServiceImpl;
 
 import javax.validation.Valid;
 import javax.ws.rs.*;
@@ -12,16 +14,20 @@ import java.util.List;
 @Path("posts")
 public class PostResource {
 
-    List<Post> postList;
+    PostService postService;
 
-    public PostResource(){
-         this.postList = new ArrayList<>();
+    public PostResource() {
+
+        postService = new PostServiceImpl();
+
     }
 
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public Response getAllPosts() {
+
+        List<Post> postList = postService.getAllPosts();
 
         return Response
                 .status(Response.Status.OK)
@@ -31,9 +37,9 @@ public class PostResource {
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
-    public Response addPost(@Valid Post post,@Context UriInfo uriInfo) {
+    public Response addPost(@Valid Post post, @Context UriInfo uriInfo) {
 
-        postList.add(createPost(post.getId(),post.getTitle(),post.getContent()));
+        postService.addPost(post);
 
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(post.getId());
@@ -47,33 +53,39 @@ public class PostResource {
     @PUT
     public Response updatePost(@Valid Post postToUpdate, @Context UriInfo uriInfo) {
 
+        String status;
+
         UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         builder.path(postToUpdate.getId());
 
-        for (Post post : postList) {
-            if (post.getId().equals(postToUpdate.getId())) {
-                post.setContent(postToUpdate.getContent());
-                return Response
-                        .created(builder.build())
-                        .status(Response.Status.CREATED)
-                        .build();
-            }
-        }
 
-        return Response
-                .status(Response.Status.NOT_FOUND)
-                .build();
+        status = postService.updatePost(postToUpdate);
+
+        System.out.println(status);
+
+        if (status == "UPDATED") {
+            return Response
+                    .created(builder.build())
+                    .status(Response.Status.CREATED)
+                    .build();
+        } else {
+            return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .build();
+
+        }
 
     }
 
     @GET
     @Path("/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPostById(@PathParam("id")String id) {
-        Post post = postList.stream()
-                .filter(post1 -> id.equals(post1.getId())).findAny().orElse(null);
+    public Response getPostById(@PathParam("id") String id) {
 
-        if(post == null){
+        Post post = postService.getPostById(id);
+
+
+        if (post == null) {
             return Response
                     .status(Response.Status.NO_CONTENT)
                     .build();
@@ -87,32 +99,22 @@ public class PostResource {
 
     @DELETE
     @Path("/{id}")
-    public Response deletePost(@PathParam("id")String id) {
+    public Response deletePost(@PathParam("id") String id) {
 
-        //postList.removeIf(post -> post.getId().equals(id));
-        for (Post post : postList) {
-            if (post.getId().equals(id)) {
-                postList.remove(post);
-                return Response
-                        .status(Response.Status.OK)
-                        .build();
-            }
+        String status;
+
+        status = postService.deletePost(id);
+
+        if (status == "DELETED") {
+            return Response
+                    .status(Response.Status.OK)
+                    .build();
+        } else {
+            return Response
+                    .status(Response.Status.NOT_FOUND)
+                    .build();
         }
-
-        return Response
-                .status(Response.Status.NOT_FOUND)
-                .build();
     }
 
-    public Post createPost(String id,String title,String content){
 
-        Post post = new Post();
-
-        post.setId(id);
-        post.setTitle(title);
-        post.setContent(content);
-
-        return post;
-
-    }
 }
